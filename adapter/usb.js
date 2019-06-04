@@ -131,6 +131,7 @@ USB.prototype.open = function (callback) {
           self.emit('connect', self.device);
           callback && callback(null, self);
           if (self.endpointIn) {
+            self.endpoint.startPoll();
             self.endpointIn.on('data', (data) => {
               self.emit('dataPrint', data);
             })
