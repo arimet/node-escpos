@@ -1,24 +1,30 @@
 'use strict';
-const util          = require('util');
-const EventEmitter  = require('events');
-const SerialPort    = require('serialport');
+const util = require('util');
+const EventEmitter = require('events');
+const SerialPort = require('serialport');
 
 /**
  * SerialPort device
  * @param {[type]} port
  * @param {[type]} options
  */
-function Serial(port, options){
+function Serial(port, options) {
   var self = this;
-  options = options || { 
+  options = options || {
     baudRate: 9600,
     autoOpen: false
   };
   this.device = new SerialPort(port, options);
-  this.device.on('close', function() {
+  this.device.on('close', function () {
     self.emit('disconnect', self.device);
     self.device = null;
   });
+
+  this.device.on('data', function (data) {
+    self.emit('dataPrinter', data);
+    self.close();
+  });
+
   EventEmitter.call(this);
   return this;
 };
@@ -30,7 +36,7 @@ util.inherits(Serial, EventEmitter);
  * @param  {Function} callback
  * @return {[type]}
  */
-Serial.prototype.open = function(callback){
+Serial.prototype.open = function (callback) {
   this.device.open(callback);
   return this;
 };
@@ -41,7 +47,7 @@ Serial.prototype.open = function(callback){
  * @param  {Function} callback [description]
  * @return {[type]}            [description]
  */
-Serial.prototype.write = function(data, callback){
+Serial.prototype.write = function (data, callback) {
   this.device.write(data, callback);
   return this;
 };
@@ -52,17 +58,17 @@ Serial.prototype.write = function(data, callback){
  * @param  {int}      timeout   [allow manual timeout for emulated COM ports (bluetooth, ...)]
  * @return {[type]} [description]
  */
-Serial.prototype.close = function(callback, timeout) {
+Serial.prototype.close = function (callback, timeout) {
 
   var self = this;
 
-  this.device.drain(function() {
+  this.device.drain(function () {
 
-    self.device.flush(function(err) {
+    self.device.flush(function (err) {
 
-      setTimeout(function() {
+      setTimeout(function () {
 
-        err ? callback && callback(err, self.device) : self.device.close(function(err) {
+        err ? callback && callback(err, self.device) : self.device.close(function (err) {
           self.device = null;
           return callback && callback(err, self.device);
         });
