@@ -22,7 +22,12 @@ function Serial(port, options) {
 
   this.device.on('data', function (data) {
     self.emit('dataPrinter', data);
-    self.close();
+    try {
+      self.close();
+    }
+    catch(error) {
+      console.log(error);
+    }
   });
 
   EventEmitter.call(this);
