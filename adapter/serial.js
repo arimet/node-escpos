@@ -72,12 +72,14 @@ Serial.prototype.close = function (callback, timeout) {
     self.device.flush(function (err) {
 
       setTimeout(function () {
-
-        err ? callback && callback(err, self.device) : self.device.close(function (err) {
-          self.device = null;
-          return callback && callback(err, self.device);
-        });
-
+        
+        if (!!self.device) {
+          err ? callback && callback(err, self.device) : self.device.close(function (err) {
+            self.device = null;
+            return callback && callback(err, self.device);
+          });
+        }
+        
       }, "number" === typeof timeout && 0 < timeout ? timeout : 0);
 
     });
